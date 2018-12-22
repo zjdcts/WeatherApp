@@ -5,11 +5,15 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -47,16 +51,31 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView comfortText;
     private TextView carWashText;
     private TextView sportText;
+
     private ImageView weatherInfoImg;
     private ImageView bingPicImg;
+
+    public SwipeRefreshLayout swipeRefreshLayout;
+    private String mWeatherId;
+
+    public DrawerLayout drawerLayout;
+    private Button navButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         setContentView(R.layout.activity_weather);
+
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navButton = findViewById(R.id.nav_button);
+
 
         bingPicImg = findViewById(R.id.bing_pic_img);
 
@@ -85,6 +104,23 @@ public class WeatherActivity extends AppCompatActivity {
         HeConfig.switchToFreeServerNode();
 
         String weatherId = getIntent().getStringExtra("weather_id");
+        mWeatherId = getIntent().getStringExtra("weather_id");
+
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(mWeatherId);
+                requestAir(mWeatherId);
+            }
+        });
+
         requestWeather(weatherId);
         requestAir(weatherId);
     }
@@ -94,15 +130,17 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onError(Throwable throwable) {
                 Log.i("Log", "error", throwable);
+                //swipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onSuccess(List<Weather> list) {
-                Log.i("Log", "onSuccess: " + new Gson().toJson(list));
+                //Log.i("Log", "onSuccess: " + new Gson().toJson(list));
                 showWeatherInfo(list.get(0));
+                //swipeRefreshLayout.setRefreshing(false);
             }
         });
-        loadBingPic();
+        //loadBingPic();
     }
 
     public void requestAir(String weatherId) {
@@ -110,11 +148,13 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onError(Throwable throwable) {
                 Log.i("Log", "error", throwable);
+                swipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onSuccess(List<AirNow> list) {
                 showAirInfo(list.get(0));
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
     }
