@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.example.marvelous.weatherapplication.db.City;
 import com.example.marvelous.weatherapplication.db.County;
 import com.example.marvelous.weatherapplication.db.Province;
+import com.example.marvelous.weatherapplication.service.AutoUpdateService;
 import com.example.marvelous.weatherapplication.util.HttpUtil;
 import com.example.marvelous.weatherapplication.util.Utility;
 

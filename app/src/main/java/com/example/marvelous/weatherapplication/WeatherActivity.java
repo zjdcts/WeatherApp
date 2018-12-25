@@ -1,6 +1,7 @@
 package com.example.marvelous.weatherapplication;
 
 import android.app.backup.SharedPreferencesBackupHelper;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -20,6 +21,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.marvelous.weatherapplication.service.AutoUpdateService;
 import com.example.marvelous.weatherapplication.util.HttpUtil;
 import com.google.gson.Gson;
 
@@ -51,6 +53,12 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView comfortText;
     private TextView carWashText;
     private TextView sportText;
+    private TextView fengLi;
+    private TextView tiGanWenDu;
+    private TextView shiDu;
+    private TextView nengJianDu;
+    private TextView ziWaiXian;
+    private TextView qiYa;
 
     private ImageView weatherInfoImg;
     private ImageView bingPicImg;
@@ -91,6 +99,12 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText = findViewById(R.id.car_wash_text);
         sportText = findViewById(R.id.sport_text);
         weatherInfoImg = findViewById(R.id.weather_info_img);
+        fengLi = findViewById(R.id.fengli);
+        tiGanWenDu = findViewById(R.id.tiganwendu);
+        shiDu = findViewById(R.id.shidu);
+        nengJianDu = findViewById(R.id.nengjiandu);
+        ziWaiXian = findViewById(R.id.ziwaixian);
+        qiYa = findViewById(R.id.qiya);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         String bingPic = prefs.getString("bing_pic",null);
@@ -161,15 +175,21 @@ public class WeatherActivity extends AppCompatActivity {
 
     private void showWeatherInfo(Weather weather) {
         String cityName = weather.getBasic().getLocation();
-        Log.i("Tag", cityName);
+        //Log.i("Tag", cityName);
         titleCity.setText(cityName);
         String updateTime = weather.getUpdate().getLoc();
         titleUpdateTime.setText(updateTime);
         String degree = weather.getNow().getTmp() + "℃";
         degreeText.setText(degree);
         String weatherInfo = weather.getNow().getCond_txt();
-        Log.i("Tag", weatherInfo);
-        System.out.println(weatherInfo + "??????");
+        fengLi.setText(weather.getNow().getWind_dir()+"\n"+weather.getNow().getWind_spd()+"km/h");
+        tiGanWenDu.setText("体感温度" +"\n"+weather.getNow().getFl()+"℃");
+        shiDu.setText("湿度"+"\n"+weather.getNow().getHum()+"%");
+        nengJianDu.setText("能见度"+"\n"+weather.getNow().getVis()+"千米");
+        ziWaiXian.setText("降水量"+"\n"+weather.getNow().getPcpn()+"mm");
+        qiYa.setText("气压"+"\n"+weather.getNow().getPres()+"百帕");
+        //Log.i("Tag", weatherInfo);
+        //System.out.println(weatherInfo + "??????");
         weatherInfoText.setText(weatherInfo);
         if (weatherInfo.equals("晴")) {
             weatherInfoImg.setImageResource(R.drawable.qing);
@@ -202,8 +222,8 @@ public class WeatherActivity extends AppCompatActivity {
                 infoImg.setImageResource(R.drawable.yintian);
             }
             dateText.setText(forecastBase.getDate());
-            maxText.setText(forecastBase.getTmp_max() + "℃");
-            minText.setText(forecastBase.getTmp_min() + "℃");
+            maxText.setText("最高："+forecastBase.getTmp_max() + "℃");
+            minText.setText("最高："+forecastBase.getTmp_min() + "℃");
             forecastLayout.addView(view);
         }
         for (LifestyleBase lifestyleBase : weather.getLifestyle()) {
@@ -217,6 +237,9 @@ public class WeatherActivity extends AppCompatActivity {
                 sportText.setText("运动建议: " + lifestyleBase.getBrf() + "\n\n" + lifestyleBase.getTxt());
             }
         }
+        //weatherLayout.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     private void showAirInfo(AirNow airNow) {
